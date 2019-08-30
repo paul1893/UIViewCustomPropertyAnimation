@@ -30,20 +30,20 @@ class DistortionLayer: CAShapeLayer {
     }
     
     override func action(forKey event: String) -> CAAction? {
-        if DistortionLayer.isCustomAnimKey(event) {
-            if let action = super.action(forKey: #keyPath(backgroundColor)) as? CAAnimation,
-                let animation: CABasicAnimation = (action.copy() as? CABasicAnimation) {
-                    animation.keyPath = event
-                    if let pLayer = presentation() {
-                        animation.fromValue = pLayer.distortion
-                    }
-                    animation.toValue = nil
-                    return animation
-            }
-            setNeedsDisplay()
-            return nil
+        guard DistortionLayer.isCustomAnimKey(event)
+            else { return super.action(forKey: event) }
+        
+        guard let action = super.action(forKey: #keyPath(backgroundColor)) as? CAAnimation,
+            let animation: CABasicAnimation = (action.copy() as? CABasicAnimation) else {
+                setNeedsDisplay()
+                return nil
         }
         
-        return super.action(forKey: event)
+        if let presentationLayer = presentation() {
+            animation.fromValue = presentationLayer.distortion
+        }
+        animation.keyPath = event
+        animation.toValue = nil
+        return animation
     }
 }
